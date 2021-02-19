@@ -16,8 +16,37 @@ str(choco)
 
 
 
+## 1.
+
+```{r}
+summary(choco$Rating)
+boxplot(choco$Rating) 
+hist(choco$Rating)
+```
+<br>
+<br>
+<br>
+Our ratings are left skewed(negatively skewed) , there are few outliers.
+We can see from our summary statistics that our range is between 1.00 to 4.00
 
 
+## 2.
+
+We can see some locations have higher ratings than the others. We can also see the companies that
+are located in Chile has the highest average rating and companies that are located in India and PR have the
+lowest average ratings
+```{r}
+library(dplyr)
+LocationRatings <- choco %>% group_by(Location) %>% summarise(avgRating = mean(Rating))
+print(LocationRatings)
+```
+
+Let's look at the highest 10 company locations that have their average rating higher than the others.
+```{r}
+best10 <- head(LocationRatings[order(LocationRatings$avgRating,decreasing = T),], 10)
+print(best10)
+barplot(best10$avgRating, names.arg = best10$Location, xlab="Location",ylab="Ratings",col="blue",border="red")
+```
 
 
 ## 3. 
@@ -103,7 +132,7 @@ ggplot(choco5, aes(Bean_Origin,Rating)) + geom_boxplot() + coord_flip()
 Looking at the boxplots from each bean origin with at least 5 observations, we can see that there are some places, like Ivory Coast, Puerto Rico, and Uganda that have lower ratings than the other places. Solomon Islands is the only one that has a noticeably higher rating distibution. From this data, I think we can conclude that for the most part, bean origin doesn't have a large impact on taste rating, but there are a few places like Puerto Rico that may have worse tasting beans. And other places like Solomon Islands that have better tasting beans.
 
 
-## Analysis
+## Analysis 1
 
 I chose to look at the ratings of the chocolates over time to see if they change at all. I am wondering if over time, the person rating the chocolates gets more critical, more forgiving, neither, or if there is some other change in the ratings over time.
 
@@ -129,3 +158,24 @@ dateratings
 ```
 
 Looking at both the graphical and numerical output, the biggest thing that we can take away is that over the course of time, there were fewer low scores handed out. From 2006-2008, the lowest score was 1 each year, then from 2009-2012, the lowest score handed out each year rose to 1.5, then to 1.75 in 2013. After 2013, there were no scores below 2.00 given out. The means each year seem to slowly rise until peaking in 2017, probably partly due to the fact that there were fewer low ratings. There are a few explanations for this. One could be that whoever was rating the chocolates developed a different taste for chocolates after eating so many. What I think happened is that as they rated more and more chocolates, they got more popular within the chocolate industry, which gave them access to better chocolates. That means that they might not have to try low quality chocolates like they might have had to do in the beginning, leading to low ratings for some.
+
+
+## Analysis 2
+
+I chose to look at if there is any connection between the number of ingredients and chocolate ratings.
+Let's remember that Ingredients column ("#" = represents the number of ingredients in the chocolate; B = Beans, S = Sugar, S* = Sweetener other than white cane or beet sugar, C = Cocoa Butter, V = Vanilla, L = Lecithin, Sa = Salt)
+```{r}
+IngredientsRatings <- choco %>% group_by(Ingredients) %>% summarise(avgRating1 = mean(Rating))
+print(IngredientsRatings)
+best22 <- head(IngredientsRatings[order(IngredientsRatings$avgRating1,decreasing = T),], 22)
+print(best22) 
+barplot(best22$avgRating1, names.arg = best22$Ingredients, xlab="Ingredients",ylab="Ratings",col="red",border="blue")
+```
+<br>
+<br>
+We can see that there is no direct correlation between number of ingredients and chocolate ratings. What effects the rating is what goes into the chocolate.
+Our highest rated ingredients combination is : B,S,C meaning Beans, Sugar, Cocoa Butter
+Our lowest rated ingredients combination is :  B,S*,Sa  meaning Beans, Sweetener and S
+
+
+
