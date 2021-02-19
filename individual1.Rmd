@@ -9,4 +9,119 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+choco <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/data/choco.csv") 
+str(choco) 
+```
 
+
+
+## 3. 
+
+```{r}
+mean(choco$Cocoa_Percent)
+morecocoa <- choco[choco$Cocoa_Percent > 71.6,]
+lesscocoa <- choco[choco$Cocoa_Percent < 71.6,]
+mean(morecocoa$Rating)
+mean(lesscocoa$Rating)
+```
+
+Here, I looked at the average cocoa percent, and used that to divide the data set into the bars with above average cocoa percent and below average cocoa percent. Then I looked to see if there is a difference in the average rating between the two. Here it appears as if chocolates with a lower cocoa percent seem to have slightly higher average ratings.
+
+```{r}
+quantile(choco$Cocoa_Percent, .33)
+quantile(choco$Cocoa_Percent, .67)
+lowcocoa <- choco[choco$Cocoa_Percent < 70,]
+highcocoa <- choco[choco$Cocoa_Percent > 72,]
+medcocoa <- choco[choco$Cocoa_Percent <= 72 & choco$Cocoa_Percent <= 70,]
+```
+
+I then decided to split the data into thirds, using the 33rd and 67th quantiles to find the limits of the middle third. I ended up with low, medium, and high cocoa percent groups.
+
+```{r}
+mean(lowcocoa$Rating)
+mean(medcocoa$Rating)
+mean(highcocoa$Rating)
+```
+
+Then I looked at the average rating for each of the groups, and found that the medium amount of cocoa had the highest average rating, followed by the low cocoa group. The high cocoa group had a lower rating than the others.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+CocoaRatings <- choco %>% group_by(Cocoa_Percent) %>% summarise(avgRating = mean(Rating))
+
+ggplot(CocoaRatings, aes(Cocoa_Percent,avgRating)) + geom_line()
+```
+
+Finally, I made a graph to look at the average rating at each cocoa percent in our data. Using this graph and the data above, we can come to the conclusion that only the chocolates with extremely high or low amounts of cocoa get lower ratings. We see fairly consistent ratings for cocoa percents between 55-85, but there are drop offs at the edges, except for a brief spike at a cocoa percent of 50.
+
+## 4. 
+
+```{r}
+library(dplyr)
+
+OriginRatings <- choco %>% group_by(Bean_Origin) %>% summarise(avgRating = mean(Rating))
+
+OriginRatings[OriginRatings$avgRating == max(OriginRatings$avgRating),]
+
+OriginRatings[OriginRatings$avgRating == min(OriginRatings$avgRating),]
+```
+
+First, we just look at the maximum and minimum average rating of all the bean origins, and we see that Tobago has a high average rating of 3.625, while Martinique, Principe, Puerto Rico, and St. Vincent-Grenadines have low average ratings of 2.75. But now we look at only bean origins with at least 5 observations, because less than that doesn't really suggest much about the bean origin.
+
+
+```{r}
+library(dplyr)
+
+OriginCount <- choco %>% group_by(Bean_Origin) %>% summarise(n = n()) %>% filter(n>4)
+
+choco5 <- subset(choco, Bean_Origin %in% OriginCount$Bean_Origin)
+
+choco5ratings <- choco5 %>% group_by(Bean_Origin) %>% summarise(avgRating = mean(Rating))
+
+choco5ratings[choco5ratings$avgRating == max(choco5ratings$avgRating),]
+
+choco5ratings[choco5ratings$avgRating == min(choco5ratings$avgRating),]
+```
+
+Here we see that of the bean origins with at least 5 observations, Solomon Islands has the highest average rating of 3.45, and Only Puerto Rico is left with a low 2.75 rating.
+
+
+```{r}
+library(ggplot2)
+
+ggplot(choco5, aes(Bean_Origin,Rating)) + geom_boxplot() + coord_flip()
+
+```
+
+Looking at the boxplots from each bean origin with at least 5 observations, we can see that there are some places, like Ivory Coast, Puerto Rico, and Uganda that have lower ratings than the other places. Solomon Islands is the only one that has a noticeably higher rating distibution. From this data, I think we can conclude that for the most part, bean origin doesn't have a large impact on taste rating, but there are a few places like Puerto Rico that may have worse tasting beans. And other places like Solomon Islands that have better tasting beans.
+
+
+## Analysis
+
+I chose to look at the ratings of the chocolates over time to see if they change at all. I am wondering if over time, the person rating the chocolates gets more critical, more forgiving, neither, or if there is some other change in the ratings over time.
+
+```{r}
+min(choco$Date)
+max(choco$Date)
+```
+
+The ratings started in 2006 and go until 2020.
+
+```{r}
+library(ggplot2)
+
+ggplot(choco, aes(as.factor(Date),Rating)) + geom_boxplot()
+```
+
+```{r}
+library(dplyr)
+
+dateratings <- choco %>% mutate(Date = as.factor(Date)) %>% group_by(Date) %>% summarise(mean = mean(Rating), min = min(Rating), max = max(Rating))
+
+dateratings
+```
+
+Looking at both the graphical and numerical output, the biggest thing that we can take away is that over the course of time, there were fewer low scores handed out. From 2006-2008, the lowest score was 1 each year, then from 2009-2012, the lowest score handed out each year rose to 1.5, then to 1.75 in 2013. After 2013, there were no scores below 2.00 given out. The means each year seem to slowly rise until peaking in 2017, probably partly due to the fact that there were fewer low ratings. There are a few explanations for this. One could be that whoever was rating the chocolates developed a different taste for chocolates after eating so many. What I think happened is that as they rated more and more chocolates, they got more popular within the chocolate industry, which gave them access to better chocolates. That means that they might not have to try low quality chocolates like they might have had to do in the beginning, leading to low ratings for some.
