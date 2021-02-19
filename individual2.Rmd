@@ -1,0 +1,61 @@
+---
+title: "Individual2"
+author: "Ibrahim Murat Oztok"
+date: "2/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+choco <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/data/choco.csv") 
+str(choco) 
+```
+
+##1
+```{r}
+summary(choco$Rating)
+boxplot(choco$Rating) 
+hist(choco$Rating)
+```
+<br>
+<br>
+<br>
+Our ratings are left skewed(negatively skewed) , there are few outliers.
+We can see from our summary statistics that our range is between 1.00 to 4.00
+
+
+##2
+We can see some locations have higher ratings than the others. We can also see the companies that
+are located in Chile has the highest average rating and companies that are located in India and PR have the
+lowest average ratings
+```{r}
+library(dplyr)
+LocationRatings <- choco %>% group_by(Location) %>% summarise(avgRating = mean(Rating))
+print(LocationRatings)
+```
+
+Let's look at the highest 10 company locations that have their average rating higher than the others.
+```{r}
+best10 <- head(LocationRatings[order(LocationRatings$avgRating,decreasing = T),], 10)
+print(best10)
+barplot(best10$avgRating, names.arg = best10$Location, xlab="Location",ylab="Ratings",col="blue",border="red")
+```
+
+## Analysis
+I chose to look at if there is any connection between the number of ingredients and chocacalte ratings.
+Let's remember that Ingredients column ("#" = represents the number of ingredients in the chocolate; B = Beans, S = Sugar, S* = Sweetener other than white cane or beet sugar, C = Cocoa Butter, V = Vanilla, L = Lecithin, Sa = Salt)
+```{r}
+IngredientsRatings <- choco %>% group_by(Ingredients) %>% summarise(avgRating1 = mean(Rating))
+print(IngredientsRatings)
+best22 <- head(IngredientsRatings[order(IngredientsRatings$avgRating1,decreasing = T),], 22)
+print(best22) 
+barplot(best22$avgRating1, names.arg = best22$Ingredients, xlab="Ingredients",ylab="Ratings",col="red",border="blue")
+```
+<br>
+<br>
+We can see that there is no direct correlation between number of ingredients and chocolate ratings. What effects the rating is what goes into the chocolate.
+Our highest rated ingredients combination is : B,S,C meaning Beans, Sugar, Cocoa Butter
+Our lowest rated ingredients combination is :  B,S*,Sa  meaning Beans, Sweetener and S
